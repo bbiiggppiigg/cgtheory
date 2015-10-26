@@ -84,17 +84,20 @@ int depth_limited(Board * start,int threshold){
 	pq->push(start);
 	int cutoff = 1000000;
 	int i =0;
+	char logstring[1000];
 	while(!pq->empty()){
 		i++;
 
 		b = pq->top();
-		if(pq->size() % 10000 ==0 ){
+		/*if(pq->size() % 10000 ==0 ){
 			printf("%lu\n",pq->size());
-		}	
+		}*/	
 		//printf("step = %d queue size = %d \n",b->step,pq->size());
 		if(b->is_goal()){
 			//puts("Goal Found");
 			printf("Number of nodes viewed with %d threshold %d\n",i,threshold);
+			sprintf(logstring,"Number of nodes viewed with %d threshold %d\n",i,threshold);
+			LOG(logstring);
 			return cutoff;	
 		}
 		if(b->last_move == 3){
@@ -103,8 +106,8 @@ int depth_limited(Board * start,int threshold){
 		}
 		b->last_move += 1;
 		tmp = b->gen_board(b->last_move);
-		tmp->prev = b;
 		if(tmp){
+			tmp->prev = b;
 			if(tmp->evaluate() > threshold){
 				if(tmp->evaluate() < cutoff){
 					cutoff = tmp->evaluate();
