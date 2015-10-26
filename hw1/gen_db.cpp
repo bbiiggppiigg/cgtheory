@@ -138,7 +138,7 @@ void test(){
 		tmp = open_list.front();
 		open_list.pop();
 		if(open_list.size()%10000 ==0)
-			printf("%d\n",open_list.size());
+			printf("%lu\n",open_list.size());
 		
 		if(tmp->update_table()){
 			for(int dir = 0 ; dir < 4 ; dir++){
@@ -151,10 +151,10 @@ void test(){
 		delete tmp;
 	}
 	
-	output_db("0.out",0);
-	output_db("1.out",1);
-	output_db("2.out",2);
-	output_db("3.out",3);
+	output_db("../db/0.out",0);
+	output_db("../db/1.out",1);
+	output_db("../db/2.out",2);
+	output_db("../db/3.out",3);
 	
 }
 

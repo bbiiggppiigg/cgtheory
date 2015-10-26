@@ -1,3 +1,3 @@
 all:
-	g++ -O3 -std=c++11 gen_db.cpp -o gen_db
-	g++ -O3 -std=c++11 run.cpp -o run
+	g++ -O3 -std=c++11 -Wno-write-strings gen_db.cpp -o bin/gen_db
+	g++ -O3 -Wno-write-strings -std=c++11 run.cpp -o bin/run
