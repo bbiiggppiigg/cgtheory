@@ -123,6 +123,8 @@ int depth_limited(Board * start,int threshold){
 		}
 	}
 	printf("Number of nodes viewed with %d threshold %d\n",i,threshold);
+	sprintf(logstring,"Number of nodes viewed with %d threshold %d\n",i,threshold);
+	LOG(logstring);
 	return cutoff;
 }
 void id_a_star(int t_index){
