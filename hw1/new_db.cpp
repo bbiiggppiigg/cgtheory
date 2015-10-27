@@ -230,7 +230,8 @@ bool gen_next_recur(int *seq){
 }
 void write_db(int *seq, int pi,int step){
 	FILE * fp = fopen(files[pi],"a");
-	fprintf(fp,"%d %d %d %d %d %d %d\n",seq[0],seq[1],seq[2],seq[3],seq[4],seq[5],step);
+	//fprintf(fp,"%d %d %d %d %d %d %d\n",seq[0],seq[1],seq[2],seq[3],seq[4],seq[5],step);
+	fprintf(fp,"%d\n",step);
 	fclose(fp);
 }
 void test(){
