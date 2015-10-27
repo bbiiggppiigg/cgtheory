@@ -13,21 +13,26 @@
 
 using namespace std;
 
-int lookup_table [4][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL];
-int patterns [][6] = {{0,1,5,6,10,11},{2,3,4,7,8,9},{12,13,14,18,19,23},{15,16,17,20,21,22}};
+int lookup_table [8][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL];
+int patterns [][6] = {{0,1,5,6,10,11},{2,3,4,7,8,9},{12,13,14,18,19,23},{15,16,17,20,21,22},{0,1,2,5,6,7},{3,4,8,9,13,14},{12,17,18,19,22,23},{10,11,15,16,20,21}};
 
 class Board{
 public:
 	int board[SIZE*SIZE];
 	int empty_index;
 	int step;
+	int group_counter[8];
 	Board(){
 		step = 0;
+		for (int i=0;i<8;i++){
+			group_counter[i]=0;
+		}
 	}
 	bool init_sequence(){
 		for (int i = 0 ; i< TOTAL; i++){
 			this->board[i] = i;
 		}
+
 		empty_index = TOTAL-1;
 		return true;
 	}
@@ -40,6 +45,7 @@ public:
 			putchar('\n');
 		}
 		printf("Step required is %d\n",step);
+	
 	}
 
 	void print_line(){
@@ -73,6 +79,7 @@ public:
 		
 		Board * b = new Board();
 		memcpy(b->board,this->board,TOTAL*sizeof(int));
+		memcpy(b->group_counter,this->group_counter,8*sizeof(int));
 		b->board[empty_index] = b->board[swap_index];
 		b->board[swap_index] = 24; 
 		b->empty_index = swap_index;
@@ -82,10 +89,11 @@ public:
 	
 	bool update_table(){
 		bool updated= false;
-		for(int pi : {0,1,2,3}){
+		for(int pi : {0,1,2,3,4,5,6,7}){
 			if(-1==lookup_table[pi][board[patterns[pi][0]]][board[patterns[pi][1]]][board[patterns[pi][2]]][board[patterns[pi][3]]][board[patterns[pi][4]]][board[patterns[pi][5]]]){
 				lookup_table[pi][board[patterns[pi][0]]][board[patterns[pi][1]]][board[patterns[pi][2]]][board[patterns[pi][3]]][board[patterns[pi][4]]][board[patterns[pi][5]]]
- = step;
+ = group_counter[pi];
+ group_counter[pi]++;
 				//printf("%d %d %d %d %d %d %d\n",board[patterns[pi][0]],board[patterns[pi][1]],board[patterns[pi][2]],board[patterns[pi][3]],board[patterns[pi][4]],board[patterns[pi][5]],step);
 				updated = true;
 			}else{
@@ -119,9 +127,9 @@ void output_db(char * filename,  int index){
 	puts("Done");
 
 }
-void test(){
-	puts("Initialization");
-	for(int i : {0,1,2,3}){
+void initialize(){
+puts("Initialization");
+	for(int i : {0,1,2,3,4,5,6,7}){
 		for (int j = 0; j < 25 ;j++){
 			for (int k =0; k< 25 ;k++){
 				memset(lookup_table[i][j][k],-1,TOTAL*TOTAL*TOTAL*TOTAL*sizeof(int));
@@ -131,7 +139,10 @@ void test(){
 	Board * start = new Board();
 	start->init_sequence();
 	open_list.push(start);
-	puts("After Initialization");
+	puts("After Initialization");	
+}
+void test(){
+	initialize();
 	Board * tmp;
 	Board * tt;
 	while(!open_list.empty()){
@@ -141,13 +152,16 @@ void test(){
 			printf("%lu\n",open_list.size());
 		
 		if(tmp->update_table()){
+
 			for(int dir = 0 ; dir < 4 ; dir++){
 				tt = tmp->gen_board(dir);
 				if(tt){
 					open_list.push(tt);
 				}
 			}
+		
 		}
+
 		delete tmp;
 	}
 	
@@ -155,6 +169,10 @@ void test(){
 	output_db("../db/1.out",1);
 	output_db("../db/2.out",2);
 	output_db("../db/3.out",3);
+	output_db("../db/4.out",4);
+	output_db("../db/5.out",5);
+	output_db("../db/6.out",6);
+	output_db("../db/7.out",7);
 	
 }
 

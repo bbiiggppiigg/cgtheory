@@ -1,32 +1,12 @@
-Mon Oct 26 15:19:41 2015
+Tue Oct 27 16:00:29 2015
  : Threshold = 0
-Mon Oct 26 15:19:41 2015
- : Threshold = 1
-Mon Oct 26 15:19:41 2015
- : Threshold = 2
-Mon Oct 26 15:19:41 2015
+Tue Oct 27 16:00:29 2015
+ : Number of nodes viewed with 0 threshold 0
+
+Tue Oct 27 16:00:29 2015
  : Threshold = 3
-Mon Oct 26 15:19:41 2015
- : Threshold = 4
-Mon Oct 26 15:19:41 2015
- : Threshold = 5
-Mon Oct 26 15:19:41 2015
- : Threshold = 6
-Mon Oct 26 15:19:41 2015
- : Threshold = 7
-Mon Oct 26 15:19:41 2015
- : Threshold = 8
-Mon Oct 26 15:19:41 2015
- : Threshold = 9
-Mon Oct 26 15:19:41 2015
- : Threshold = 10
-Mon Oct 26 15:19:42 2015
- : Threshold = 11
-Mon Oct 26 15:19:42 2015
- : Threshold = 12
-Mon Oct 26 15:19:42 2015
- : Threshold = 13
-Mon Oct 26 15:19:44 2015
- : Threshold = 14
-Mon Oct 26 15:20:41 2015
- : Threshold = 15
+Tue Oct 27 16:00:29 2015
+ : Number of nodes viewed with 3 threshold 3
+
+Tue Oct 27 16:00:29 2015
+ : goal_reached!!
