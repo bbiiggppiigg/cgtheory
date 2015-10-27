@@ -14,6 +14,7 @@ using namespace std;
 
 int lookup_table [8][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL];
 int patterns [][6] = {{0,1,5,6,10,11},{2,3,4,7,8,9},{12,13,14,18,19,23},{15,16,17,20,21,22},{0,1,2,5,6,7},{3,4,8,9,13,14},{12,17,18,19,22,23},{10,11,15,16,20,21}};
+char files[8][100]={"../db/0.out","../db/1.out","../db/2.out","../db/3.out","../db/4.out","../db/5.out","../db/6.out","../db/7.out"};
 template<
     class T,
     class Container = std::vector<T>,
@@ -168,13 +169,16 @@ void output_db(char * filename,  int index){
 }
 
 void initialize(){
-puts("Initialization");
-	for(int i : {0,1,2,3,4,5,6,7}){
+	puts("Initialization");
+	/*for(int i : {0,1,2,3,4,5,6,7}){
 		for (int j = 0; j < 25 ;j++){
 			for (int k =0; k< 25 ;k++){
 				memset(lookup_table[i][j][k],-1,TOTAL*TOTAL*TOTAL*TOTAL*sizeof(int));
 			}
 		}
+	}*/
+	for(int i=0;i<8;i++){
+		fclose(fopen(files[i],"w"));
 	}
 	puts("After Initialization");	
 }
@@ -198,8 +202,9 @@ bool re(int * seq){
 }
 
 void print_seq(int * seq){
+	printf("Dealing with sequence ");
 	for(int i =0; i< 6 ;i++){
-			printf("%d\t",seq[i]);
+			printf("%2d ",seq[i]);
 	}
 	putchar('\n');
 }
@@ -223,6 +228,11 @@ bool gen_next_recur(int *seq){
 	}while(re(seq) && have_next);
 	return 	have_next;
 }
+void write_db(int *seq, int pi,int step){
+	FILE * fp = fopen(files[pi],"a");
+	fprintf(fp,"%d %d %d %d %d %d %d\n",seq[0],seq[1],seq[2],seq[3],seq[4],seq[5],step);
+	fclose(fp);
+}
 void test(){
 	
 	int seq [6] = {0,0,0,0,0,0};
@@ -232,20 +242,16 @@ void test(){
 	initialize();
 	while(gen_next_recur(seq)){
 		record =0 ;
+		print_seq(seq);
 		for(int piindex = 0 ; piindex < 8 ;piindex++){
 			start = new Board();
 			start->init_with_sequence(seq,piindex);
 			open_list.push(start);
-			//printf("evaluate = %d\n",start->evaluate());
-			
 			while(!open_list.empty()){
 				current = open_list.top();
 				open_list.pop();
-				//printf("%lu\n",open_list.size());
-				//current->print();
 				if(current->is_goal()){
-					puts("Goal Found");
-					printf("Goal Found , step =%d\n",current->step);
+					printf("Goal Found for pattern %d , step =%d\n",piindex,current->step);
 					//current->print();
 					break;
 				}
@@ -262,11 +268,7 @@ void test(){
 				}
 				delete current;
 			}
-			/*for(int i =0;i <6 ;i++){
-				printf("%d\t",seq[i]);
-			}
-			printf("%d\n",current->step);*/
-			lookup_table[piindex][seq[0]][seq[1]][seq[2]][seq[3]][seq[4]][seq[5]] = current->step;
+			write_db(seq,piindex,current->step);
 			while(!open_list.empty()){
 				current = open_list.top(); 
 				open_list.pop();
@@ -274,15 +276,6 @@ void test(){
 			}
 		}
 	}
-	output_db("../db/0.out",0);
-	output_db("../db/1.out",1);
-	output_db("../db/2.out",2);
-	output_db("../db/3.out",3);
-	output_db("../db/4.out",4);
-	output_db("../db/5.out",5);
-	output_db("../db/6.out",6);
-	output_db("../db/7.out",7);
-
 }
 
 
