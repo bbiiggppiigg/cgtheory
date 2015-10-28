@@ -46,6 +46,9 @@ class Board{
 public:
 	int board[TOTAL];
 	int step;
+	/**
+		The position of the i-th non_empty tile on the board is non_empty[i]
+	**/
 	int non_empty[6] ;
 	Board(){
 		step = 0;
@@ -77,37 +80,57 @@ public:
 		}
 		putchar('\n');
 	}
-	Board * gen_board(int index, int dir){
-		int swap_index = -1;
-		int empty_index = non_empty[index];
+	/***
+		index
+		empty_index
+		swap_index
+	***/
+	Board * gen_board(int tile_id, int dir){
+		int target_index = -1;
+		int source_index = non_empty[tile_id];
 		switch(dir){
 			case UP:
-				if(empty_index >= SIZE)
-					swap_index = empty_index-SIZE;
+				if(source_index >= SIZE)
+					target_index = source_index-SIZE;
 			break;
 			case DOWN:
-				if(empty_index / SIZE < SIZE-1)
-					swap_index = empty_index+SIZE;
+				if(source_index / SIZE < SIZE-1)
+					target_index = source_index+SIZE;
 			break;
 			case LEFT:
-				if(empty_index % SIZE)
-					swap_index = empty_index-1;
+				if(source_index % SIZE)
+					target_index = source_index-1;
 			break;
 			case RIGHT:
-				if((empty_index+1) % SIZE )
-				swap_index = empty_index+1;
+				if((source_index+1) % SIZE )
+				target_index = source_index+1;
 			break;
 		}
-		if(swap_index==-1 || board[swap_index]!=-1)
+		if(target_index==-1)
 			return NULL;
 		
 		Board * b = new Board();
 		memcpy(b->board,this->board,TOTAL*sizeof(int));
 		memcpy(b->non_empty,this->non_empty,6*sizeof(int));
-		b->step = step+1;
-		b->board[swap_index] = board[empty_index];
-		b->board[empty_index]=-1;
-		b->non_empty[index] = swap_index;
+		int swap_index_tile_id;
+		if(b->board[target_index]!=-1){
+			for(int x =0 ; x < 6;x++){
+				if(non_empty[x]==target_index)
+					swap_index_tile_id =x;
+			}
+			b->board[target_index] = board[source_index];
+			b->board[source_index]=board[target_index];
+			b->non_empty[tile_id] = target_index;
+			b->non_empty[swap_index_tile_id] = source_index;
+		}else{
+			b->board[target_index] = board[source_index];
+			b->non_empty[tile_id] = target_index;
+			b->board[source_index] =-1;
+		}
+		if(b->board[source_index] != TOTAL-1)
+			b->step = step+1;
+		
+
 		return b; 
 	}
 	int abs(int x) const{
@@ -241,13 +264,17 @@ void test(){
 	Board * current;
 	int record=0;
 	initialize();
+	int step_size =0 ;
 	while(gen_next_recur(seq)){
-		record =0 ;
+		record ++ ;
+		if(record < 31)
+			continue;
 		print_seq(seq);
 		for(int piindex = 0 ; piindex < 8 ;piindex++){
 			start = new Board();
 			start->init_with_sequence(seq,piindex);
 			open_list.push(start);
+			step_size =0;	
 			while(!open_list.empty()){
 				current = open_list.top();
 				open_list.pop();
@@ -256,9 +283,13 @@ void test(){
 					//current->print();
 					break;
 				}
-				for(int in_pattern =0 ;in_pattern < 6 ;in_pattern++){
+				if(step_size<current->step){
+					step_size = current->step;
+					printf("%d\n",step_size);
+				}
+				for(int tile_id =0 ;tile_id < 6 ;tile_id++){
 					for (int direc =0; direc < 4 ;direc++){
-						Board * tmp = current->gen_board(in_pattern,direc);
+						Board * tmp = current->gen_board(tile_id,direc);
 						if(tmp){
 							if(!open_list.exist(tmp)){	
 								open_list.push(tmp);
