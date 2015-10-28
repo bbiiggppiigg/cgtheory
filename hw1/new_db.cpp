@@ -112,6 +112,9 @@ public:
 		Board * b = new Board();
 		memcpy(b->board,this->board,TOTAL*sizeof(int));
 		memcpy(b->non_empty,this->non_empty,6*sizeof(int));
+		if(b->board[source_index] != TOTAL-1)
+			b->step = step+1;
+
 		int swap_index_tile_id;
 		if(b->board[target_index]!=-1){
 			for(int x =0 ; x < 6;x++){
@@ -122,13 +125,16 @@ public:
 			b->board[source_index]=board[target_index];
 			b->non_empty[tile_id] = target_index;
 			b->non_empty[swap_index_tile_id] = source_index;
+			/*
+				delete b;
+				return NULL;
+			*/
 		}else{
 			b->board[target_index] = board[source_index];
 			b->non_empty[tile_id] = target_index;
 			b->board[source_index] =-1;
 		}
-		if(b->board[source_index] != TOTAL-1)
-			b->step = step+1;
+		
 		
 
 		return b; 
@@ -213,7 +219,7 @@ struct compareBoard{
 };
 //MyQueue<Board * > open_list; 
 MyQueue<Board*, vector<Board*>,compareBoard > open_list;
-
+MyQueue<Board*, vector<Board*>,compareBoard > close_list;
 bool re(int * seq){
 	for(int i=0;i<6;i++){
 		for(int j=i+1;j<6;j++){
@@ -267,17 +273,19 @@ void test(){
 	int step_size =0 ;
 	while(gen_next_recur(seq)){
 		record ++ ;
-		if(record < 31)
-			continue;
+		//if(record < 31)
+		//	continue;
 		print_seq(seq);
 		for(int piindex = 0 ; piindex < 8 ;piindex++){
 			start = new Board();
 			start->init_with_sequence(seq,piindex);
 			open_list.push(start);
 			step_size =0;	
+			
 			while(!open_list.empty()){
 				current = open_list.top();
 				open_list.pop();
+				close_list.push(current);
 				if(current->is_goal()){
 					printf("Goal Found for pattern %d , step =%d\n",piindex,current->step);
 					//current->print();
@@ -291,19 +299,26 @@ void test(){
 					for (int direc =0; direc < 4 ;direc++){
 						Board * tmp = current->gen_board(tile_id,direc);
 						if(tmp){
-							if(!open_list.exist(tmp)){	
+							if(!close_list.exist(tmp)){	
 								open_list.push(tmp);
 							}else
 								delete tmp;
 						}
 					}
 				}
-				delete current;
 			}
+
 			write_db(seq,piindex,current->step);
+			
 			while(!open_list.empty()){
 				current = open_list.top(); 
 				open_list.pop();
+				delete current;
+			}
+			
+			while(!close_list.empty()){
+				current = close_list.top();
+				close_list.pop();
 				delete current;
 			}
 		}
