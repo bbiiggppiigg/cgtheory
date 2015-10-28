@@ -117,18 +117,19 @@ public:
 
 		int swap_index_tile_id;
 		if(b->board[target_index]!=-1){
-			for(int x =0 ; x < 6;x++){
+			
+			/*for(int x =0 ; x < 6;x++){
 				if(non_empty[x]==target_index)
 					swap_index_tile_id =x;
 			}
 			b->board[target_index] = board[source_index];
 			b->board[source_index]=board[target_index];
 			b->non_empty[tile_id] = target_index;
-			b->non_empty[swap_index_tile_id] = source_index;
-			/*
+			b->non_empty[swap_index_tile_id] = source_index;*/
+			
 				delete b;
 				return NULL;
-			*/
+			
 		}else{
 			b->board[target_index] = board[source_index];
 			b->non_empty[tile_id] = target_index;
@@ -299,7 +300,7 @@ void test(){
 					for (int direc =0; direc < 4 ;direc++){
 						Board * tmp = current->gen_board(tile_id,direc);
 						if(tmp){
-							if(!close_list.exist(tmp)){	
+							if(!close_list.exist(tmp)&&!open_list.exist(tmp)){	
 								open_list.push(tmp);
 							}else
 								delete tmp;
