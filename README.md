@@ -1,3 +1,3 @@
-# cgtheory
+# 2015-NTU-Theory of Computer Games
 
-2015-NTU-Theory of Computer Games
+
