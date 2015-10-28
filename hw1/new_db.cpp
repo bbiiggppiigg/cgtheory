@@ -79,6 +79,7 @@ public:
 			printf("%d\t",board[non_empty[i]]);
 		}
 		putchar('\n');
+		putchar('\n');
 	}
 	/***
 		index
@@ -112,8 +113,9 @@ public:
 		Board * b = new Board();
 		memcpy(b->board,this->board,TOTAL*sizeof(int));
 		memcpy(b->non_empty,this->non_empty,6*sizeof(int));
+		b->step = step;
 		if(b->board[source_index] != TOTAL-1)
-			b->step = step+1;
+			b->step++;
 
 		int swap_index_tile_id;
 		if(b->board[target_index]!=-1){
@@ -274,7 +276,7 @@ void test(){
 	int step_size =0 ;
 	while(gen_next_recur(seq)){
 		record ++ ;
-		//if(record < 31)
+		//if(record < 20)
 		//	continue;
 		print_seq(seq);
 		for(int piindex = 0 ; piindex < 8 ;piindex++){
@@ -287,6 +289,7 @@ void test(){
 				current = open_list.top();
 				open_list.pop();
 				close_list.push(current);
+				//current->print();
 				if(current->is_goal()){
 					printf("Goal Found for pattern %d , step =%d\n",piindex,current->step);
 					//current->print();
@@ -322,7 +325,9 @@ void test(){
 				close_list.pop();
 				delete current;
 			}
+			//break;
 		}
+		//break;
 	}
 }
 
