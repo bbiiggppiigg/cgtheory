@@ -9,16 +9,14 @@
 #define RIGHT 3
 #define SIZE  4
 #define TOTAL SIZE*SIZE
-#define PATTERN_SIZE 8
-#define PATTERN_NUM 4
+#define PATTERN_SIZE 4
+#define PATTERN_NUM 8
 
 
 using namespace std;
 
-int lookup_table [8][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL];
 int patterns [][8] = {{0,1,4,5},{8,9,12,13},{2,3,6,7},{10,11,14,15},{0,1,2,3},{4,5,6,7},{8,9,10,11},{12,13,14,15}};
 
-char files[4][100]={"../db/0.out","../db/1.out","../db/2.out","../db/3.out"};
 
 template<
     class T,
@@ -186,15 +184,12 @@ public:
 
 void initialize(){
 	puts("Initialization");
-	/*for(int i : {0,1,2,3,4,5,6,7}){
-		for (int j = 0; j < 25 ;j++){
-			for (int k =0; k< 25 ;k++){
-				memset(lookup_table[i][j][k],-1,TOTAL*TOTAL*TOTAL*TOTAL*sizeof(int));
-			}
-		}
-	}*/
+	char filename[100];
+	FILE * fp ;
 	for(int i=0;i<PATTERN_NUM;i++){
-		fclose(fopen(files[i],"w"));
+		sprintf(filename,"../db/%d.out",i);
+		fp =  fopen(filename,"w");
+		fclose(fp);
 	}
 	puts("After Initialization");	
 }
@@ -238,33 +233,42 @@ bool gen_next(int * seq,int x ){
 }
 
 bool gen_next_recur(int *seq){
+	puts("Generating Sequence");
 	bool have_next;
 	do{
 		have_next = gen_next(seq,PATTERN_SIZE-1);
 	}while(re(seq) && have_next);
+	puts("End Generating Sequence");
 	return 	have_next;
 }
 void write_db(int *seq, int pi,int step){
-	FILE * fp = fopen(files[pi],"a");
+	char filename[100];
+	sprintf(filename,"../db/%d.out",pi);
+	FILE * fp = fopen(filename,"a");
 	fprintf(fp,"%d\n",step);
 	fclose(fp);
 }
+
 void test(){
 	
-	int seq [PATTERN_SIZE] = {0,0,0,0,0,0,0,0};
+	int seq [PATTERN_SIZE];
+	memset(seq,0,sizeof(int)*PATTERN_SIZE);
 	Board * start ;
 	Board * current;
 	int record=0;
 	initialize();
 	int step_size =0 ;
 	while(gen_next_recur(seq)){
-		record ++ ;
+		//record ++ ;
 		//if(record < 20)
 		//	continue;
 		print_seq(seq);
 		for(int piindex = 0 ; piindex < PATTERN_NUM ;piindex++){
 			start = new Board();
+			start->print();
+			
 			start->init_with_sequence(seq,piindex);
+			start->print();
 			open_list.push(start);
 			step_size =0;	
 			
@@ -296,18 +300,19 @@ void test(){
 			}
 
 			write_db(seq,piindex,current->step);
-			
+			puts("Start clean up");
 			while(!open_list.empty()){
 				current = open_list.top(); 
 				open_list.pop();
 				delete current;
 			}
-			
+			puts("Between Clean Up");
 			while(!close_list.empty()){
 				current = close_list.top();
 				close_list.pop();
 				delete current;
 			}
+			puts("After Clean UP");
 		}
 	}
 }
