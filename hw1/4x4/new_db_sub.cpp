@@ -42,7 +42,13 @@ public:
         return last;
     }
     bool exist(const T&val) const{
-    	return find(val) != this->c.cend();
+    	auto first = this->c.cbegin();
+        auto last = this->c.cend();
+        while (first!=last) {
+            if (**first==*val) return true;
+            ++first;
+        }
+        return false;
     }
 };
 
