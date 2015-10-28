@@ -15,10 +15,8 @@
 
 using namespace std;
 
-int lookup_table [8][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL];
 int patterns [][8] = {{0,1,4,5,8,9,12,13},{2,3,6,7,10,11,14,15},{0,1,2,3,4,5,6,7},{8,9,10,11,12,13,14,15}};
 
-char files[4][100]={"../db/0.out","../db/1.out","../db/2.out","../db/3.out"};
 
 template<
     class T,
@@ -44,7 +42,13 @@ public:
         return last;
     }
     bool exist(const T&val) const{
-    	return find(val) != this->c.cend();
+    	auto first = this->c.cbegin();
+        auto last = this->c.cend();
+        while (first!=last) {
+            if (**first==*val) return true;
+            ++first;
+        }
+        return false;
     }
 };
 
@@ -186,15 +190,12 @@ public:
 
 void initialize(){
 	puts("Initialization");
-	/*for(int i : {0,1,2,3,4,5,6,7}){
-		for (int j = 0; j < 25 ;j++){
-			for (int k =0; k< 25 ;k++){
-				memset(lookup_table[i][j][k],-1,TOTAL*TOTAL*TOTAL*TOTAL*sizeof(int));
-			}
-		}
-	}*/
+	char filename[100];
+	FILE * fp ;
 	for(int i=0;i<PATTERN_NUM;i++){
-		fclose(fopen(files[i],"w"));
+		sprintf(filename,"../db/%d.out",i);
+		fp =  fopen(filename,"w");
+		fclose(fp);
 	}
 	puts("After Initialization");	
 }
@@ -245,13 +246,17 @@ bool gen_next_recur(int *seq){
 	return 	have_next;
 }
 void write_db(int *seq, int pi,int step){
-	FILE * fp = fopen(files[pi],"a");
+	char filename[100];
+	sprintf(filename,"../db/%d.out",pi);
+	FILE * fp = fopen(filename,"a");
 	fprintf(fp,"%d\n",step);
 	fclose(fp);
 }
 void test(){
 	
-	int seq [PATTERN_SIZE] = {0,0,0,0,0,0,0,0};
+	int seq [PATTERN_SIZE];
+	memset(seq,0,sizeof(int)*PATTERN_SIZE);
+	
 	Board * start ;
 	Board * current;
 	int record=0;

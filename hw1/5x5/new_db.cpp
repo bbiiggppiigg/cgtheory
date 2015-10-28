@@ -9,12 +9,12 @@
 #define RIGHT 3
 #define SIZE  5
 #define TOTAL SIZE*SIZE
+#define PATTERN_SIZE 6
+#define PATTERN_NUM 8
 
 using namespace std;
 
-int lookup_table [8][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL];
 int patterns [][6] = {{0,1,5,6,10,11},{2,3,4,7,8,9},{12,13,14,18,19,23},{15,16,17,20,21,22},{0,1,2,5,6,7},{3,4,8,9,13,14},{12,17,18,19,22,23},{10,11,15,16,20,21}};
-char files[8][100]={"../db/0.out","../db/1.out","../db/2.out","../db/3.out","../db/4.out","../db/5.out","../db/6.out","../db/7.out"};
 template<
     class T,
     class Container = std::vector<T>,
@@ -39,7 +39,13 @@ public:
         return last;
     }
     bool exist(const T&val) const{
-    	return find(val) != this->c.cend();
+    	auto first = this->c.cbegin();
+        auto last = this->c.cend();
+        while (first!=last) {
+            if (**first==*val) return true;
+            ++first;
+        }
+        return false;
     }
 };
 class Board{
@@ -49,7 +55,7 @@ public:
 	/**
 		The position of the i-th non_empty tile on the board is non_empty[i]
 	**/
-	int non_empty[6] ;
+	int non_empty[PATTERN_SIZE] ;
 	Board(){
 		step = 0;
 		memset(board,-1,TOTAL*sizeof(int));
@@ -57,7 +63,7 @@ public:
 
 	void init_with_sequence(int * seq,int pi){
 
-		for(int i =0 ; i< 6 ;i++){
+		for(int i =0 ; i< PATTERN_SIZE ;i++){
 			board[patterns[pi][i]] = seq[i];
 			non_empty[i] = patterns[pi][i];
 		}
@@ -67,15 +73,15 @@ public:
 	void print(){
 		for( int i =0 ;i  < TOTAL ; i++ ){
 			printf("%02d\t",board[i]);
-			if((i+1) %5==0)
+			if((i+1) % SIZE==0)
 				putchar('\n');
 		}
 		printf("step = %d evaluate = %d\n",step,evaluate());
-		for(int i=0;i< 6; i++){
+		for(int i=0;i< PATTERN_SIZE; i++){
 			printf("%d\t",non_empty[i]);
 		}
 		putchar('\n');
-		for(int i=0;i< 6; i++){
+		for(int i=0;i< PATTERN_SIZE; i++){
 			printf("%d\t",board[non_empty[i]]);
 		}
 		putchar('\n');
@@ -112,7 +118,7 @@ public:
 		
 		Board * b = new Board();
 		memcpy(b->board,this->board,TOTAL*sizeof(int));
-		memcpy(b->non_empty,this->non_empty,6*sizeof(int));
+		memcpy(b->non_empty,this->non_empty,PATTERN_SIZE*sizeof(int));
 		b->step = step;
 		if(b->board[source_index] != TOTAL-1)
 			b->step++;
@@ -149,7 +155,7 @@ public:
 	}
 	int evaluate() const{
 		int sum =0 ,x1,x2,y1,y2;
-		for (int i =0; i< 6 ;i++){
+		for (int i =0; i< PATTERN_SIZE ;i++){
 			x1 = non_empty[i]/SIZE;
 			y1 = non_empty[i]%SIZE;
 			x2 = board[non_empty[i]]/SIZE;
@@ -159,7 +165,7 @@ public:
 		return sum+step;
 	}
 	bool is_goal(){
-		for(int i =0; i< 6; i++){
+		for(int i =0; i< PATTERN_SIZE; i++){
 			if(non_empty[i] != board[non_empty[i]])
 				return false;
 		}
@@ -177,40 +183,15 @@ public:
 	}
 };
 
-void output_db(char * filename,  int index){
-	puts("Writing File ");
-	puts(filename);
-	FILE * fp = fopen(filename,"w");
-	for (int a =0 ; a < TOTAL ; a++){
-		for (int b =0 ; b < TOTAL ; b++){
-			for (int c =0 ; c < TOTAL ; c++){
-				for (int d =0 ; d < TOTAL ; d++){
-					for (int e =0 ; e < TOTAL ; e++){
-						for (int f =0 ; f < TOTAL ; f++){
-							if(-1 != lookup_table[index][a][b][c][d][e][f])
-								fprintf(fp,"%d %d %d %d %d %d %d\n",a,b,c,d,e,f,lookup_table[index][a][b][c][d][e][f]);
-						}
-					}
-				}
-			}
-		}		
-	}
-	fclose(fp);
-	puts("Done");
-
-}
 
 void initialize(){
 	puts("Initialization");
-	/*for(int i : {0,1,2,3,4,5,6,7}){
-		for (int j = 0; j < 25 ;j++){
-			for (int k =0; k< 25 ;k++){
-				memset(lookup_table[i][j][k],-1,TOTAL*TOTAL*TOTAL*TOTAL*sizeof(int));
-			}
-		}
-	}*/
-	for(int i=0;i<8;i++){
-		fclose(fopen(files[i],"w"));
+	char filename[100];
+	FILE * fp ;
+	for(int i=0;i<PATTERN_NUM;i++){
+		sprintf(filename,"../db/%d.out",i);
+		fp =  fopen(filename,"w");
+		fclose(fp);
 	}
 	puts("After Initialization");	
 }
@@ -224,8 +205,8 @@ struct compareBoard{
 MyQueue<Board*, vector<Board*>,compareBoard > open_list;
 MyQueue<Board*, vector<Board*>,compareBoard > close_list;
 bool re(int * seq){
-	for(int i=0;i<6;i++){
-		for(int j=i+1;j<6;j++){
+	for(int i=0;i<PATTERN_SIZE;i++){
+		for(int j=i+1;j<PATTERN_SIZE;j++){
 			if(seq[i]==seq[j])
 				return true;
 		}
@@ -235,7 +216,7 @@ bool re(int * seq){
 
 void print_seq(int * seq){
 	printf("Dealing with sequence ");
-	for(int i =0; i< 6 ;i++){
+	for(int i =0; i< PATTERN_SIZE ;i++){
 			printf("%2d ",seq[i]);
 	}
 	putchar('\n');
@@ -254,18 +235,22 @@ bool gen_next(int * seq,int x ){
 }
 
 bool gen_next_recur(int *seq){
+	puts("Generating Sequence");
 	bool have_next;
 	do{
-		have_next = gen_next(seq,5);
+		have_next = gen_next(seq,PATTERN_SIZE-1);
 	}while(re(seq) && have_next);
+	puts("End Generating Sequence");
 	return 	have_next;
 }
 void write_db(int *seq, int pi,int step){
-	FILE * fp = fopen(files[pi],"a");
-	//fprintf(fp,"%d %d %d %d %d %d %d\n",seq[0],seq[1],seq[2],seq[3],seq[4],seq[5],step);
+	char filename[100];
+	sprintf(filename,"../db/%d.out",pi);
+	FILE * fp = fopen(filename,"a");
 	fprintf(fp,"%d\n",step);
 	fclose(fp);
 }
+
 void test(){
 	
 	int seq [6] = {0,0,0,0,0,0};
@@ -279,7 +264,7 @@ void test(){
 		//if(record < 20)
 		//	continue;
 		print_seq(seq);
-		for(int piindex = 0 ; piindex < 8 ;piindex++){
+		for(int piindex = 0 ; piindex < PATTERN_NUM ;piindex++){
 			start = new Board();
 			start->init_with_sequence(seq,piindex);
 			open_list.push(start);
@@ -299,7 +284,7 @@ void test(){
 					step_size = current->step;
 					printf("%d\n",step_size);
 				}
-				for(int tile_id =0 ;tile_id < 6 ;tile_id++){
+				for(int tile_id =0 ;tile_id < PATTERN_SIZE ;tile_id++){
 					for (int direc =0; direc < 4 ;direc++){
 						Board * tmp = current->gen_board(tile_id,direc);
 						if(tmp){
