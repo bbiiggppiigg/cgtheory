@@ -120,7 +120,7 @@ public:
 		memcpy(b->board,this->board,TOTAL*sizeof(int));
 		memcpy(b->non_empty,this->non_empty,PATTERN_SIZE*sizeof(int));
 		b->step = step;
-		if(b->board[source_index] != TOTAL-1)
+		if(b->board[source_index] != TOTAL-1 && b->board[target_index] != TOTAL-1)
 			b->step++;
 
 		int swap_index_tile_id;
@@ -182,6 +182,8 @@ public:
 		return memcmp(this->board,other.board,TOTAL*sizeof(int)) ==0 ;
 	}
 };
+
+
 
 
 void initialize(){

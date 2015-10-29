@@ -13,13 +13,15 @@ using namespace std;
 #define DOWN 1
 #define LEFT 2
 #define RIGHT 3
-#define SIZE  5
+#define SIZE  4
 #define TOTAL SIZE*SIZE
+#define PATTERN_SIZE 4
 #define PATTERN_NUM 8
-#define PATTERN_SIZE 6
 
-int lookup_table [PATTERN_NUM][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL];
-int patterns [][PATTERN_SIZE] = {{0,1,5,6,10,11},{2,3,4,7,8,9},{12,13,14,18,19,23},{15,16,17,20,21,22},{0,1,2,5,6,7},{3,4,8,9,13,14},{12,17,18,19,22,23},{10,11,15,16,20,21}};
+
+int lookup_table [PATTERN_NUM][TOTAL][TOTAL][TOTAL][TOTAL];
+int patterns [][PATTERN_SIZE] = {{0,1,4,5},{8,9,12,13},{2,3,6,7},{10,11,14,15},{0,1,2,3},{4,5,6,7},{8,9,10,11},{12,13,14,15}};
+int testcases[MAX_TESTCASE][TOTAL];
 
 template<
     class T,
@@ -39,7 +41,7 @@ public:
         auto first = this->c.cbegin();
         auto last = this->c.cend();
         while (first!=last) {
-            if (*first==val) return first;
+            if (**first==*val) return first;
             ++first;
         }
         return last;
@@ -54,6 +56,7 @@ public:
         return false;
     }
 };
+
 class Board{
 public:
 	int board[TOTAL];
@@ -76,7 +79,7 @@ public:
 	void init_with_sequence(int * addr){
 		for (int i =0; i < TOTAL ;i++){
 			this->board[i] = addr[i];
-			if(addr[i]==24)
+			if(addr[i]==TOTAL-1)
 				empty_index = i;
 		}
 	}
@@ -123,7 +126,7 @@ public:
 		Board * b = new Board();
 		memcpy(b->board,this->board,TOTAL*sizeof(int));
 		b->board[empty_index] = b->board[swap_index];
-		b->board[swap_index] = 24; 
+		b->board[swap_index] = TOTAL; 
 		b->empty_index = swap_index;
 		b->step = step+1;
 		return b; 
@@ -140,12 +143,12 @@ public:
 	int evaluate() const {
 		int sum = 0 ,sum2 =0 ;
 		bool goal_reached = true;
-		for(int pi : {0,1,2,3}){
-			sum += lookup_table[pi][board[patterns[pi][0]]][board[patterns[pi][1]]][board[patterns[pi][2]]][board[patterns[pi][3]]][board[patterns[pi][4]]][board[patterns[pi][5]]];
+		for(int pi =0 ; (pi < PATTERN_NUM/2) ;pi++){
+			sum += lookup_table[pi][board[patterns[pi][0]]][board[patterns[pi][1]]][board[patterns[pi][2]]][board[patterns[pi][3]]];
 			
 		}
-		for (int pi : {4,5,6,7} ){
-			sum2+= lookup_table[pi][board[patterns[pi][0]]][board[patterns[pi][1]]][board[patterns[pi][2]]][board[patterns[pi][3]]][board[patterns[pi][4]]][board[patterns[pi][5]]];
+		for (int pi = PATTERN_NUM/2; pi < PATTERN_NUM; pi++ ){
+			sum2+= lookup_table[pi][board[patterns[pi][0]]][board[patterns[pi][1]]][board[patterns[pi][2]]][board[patterns[pi][3]]];
 		}
 		//printf ("sum = %d sum2 = %d\n",sum,sum2);
 		if(sum==sum2 && sum ==0){
@@ -153,8 +156,8 @@ public:
 				if(board[i]!=i)
 					goal_reached = false;
 			}
-			if(!goal_reached)
-				puts("Un recognized pattern!!!!!");
+			//if(!goal_reached)
+			//	puts("Un recognized pattern!!!!!");
 		}
 		if(sum < sum2)
 			return sum2+step;
@@ -182,7 +185,7 @@ public:
 	}
 };
 
-int testcases[MAX_TESTCASE][TOTAL];
+
 struct compareBoard{
 	bool operator()(const Board * lhs, const Board * rhs) const {
 		return lhs->evaluate() > rhs->evaluate();
@@ -211,6 +214,8 @@ void log_threshold(int d){
 	fprintf(fp,"%s : Threshold = %d\n",asctime (timeinfo),d);
 	fclose(fp);
 }
+
+
 bool re(int * seq){
 	for(int i=0;i<PATTERN_SIZE;i++){
 		for(int j=i+1;j<PATTERN_SIZE;j++){
@@ -248,6 +253,7 @@ bool gen_next_recur(int *seq){
 	}while(re(seq) && have_next);
 	return 	have_next;
 }
+
 void input_db(){
 	int seq [PATTERN_SIZE];
 
@@ -263,7 +269,7 @@ void input_db(){
 	while(gen_next_recur(seq)){
 		print_seq(seq);	
 		for(int i =0; i< PATTERN_NUM;i++){
-			fscanf(fps[i],"%d",&lookup_table[i][seq[0]][seq[1]][seq[2]][seq[3]][seq[4]][seq[5]]);
+			fscanf(fps[i],"%d",&lookup_table[i][seq[0]][seq[1]][seq[2]][seq[3]]);
 		}
 		//break;	
 	}
@@ -274,14 +280,11 @@ void input_db(){
 
 void intialization(){
 	puts("Initialization");
-	for(int i : {0,1,2,3,4,5,6,7}){
-		for (int j = 0; j < 25 ;j++){
-			for (int k =0; k< 25 ;k++){
-				memset(lookup_table[i][j][k],0,TOTAL*TOTAL*TOTAL*TOTAL*sizeof(int));
-			}
-		}
+	for(int i =0; i< PATTERN_NUM ;i++){
+		memset(lookup_table[i],0,TOTAL*TOTAL*TOTAL*TOTAL*sizeof(int));
 	}
 	input_db();
+	puts("End of Initialization");
 }
 void load_testcase(){
 	FILE * fp = fopen("../testcase/test.in","r");
@@ -290,8 +293,8 @@ void load_testcase(){
 			fscanf(fp,"%d",&testcases[j][i]);
 		}
 	fclose(fp);
+	puts("End Loading Testcase");
 }
-
 
 
 int depth_limited(Board * start,int threshold){
