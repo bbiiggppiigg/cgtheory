@@ -311,6 +311,8 @@ int depth_limited(Board * start,int threshold){
 		if(b->step > record ){
 			record = b->step;
 			printf("step = %d , cost = %d , pq size = %lu\n",record,b->evaluate(),pq->size());
+			getchar();
+			b->print();
 		}
 		if(b->is_goal()){
 			printf("Number of nodes viewed with %d threshold %d\n",i,threshold);

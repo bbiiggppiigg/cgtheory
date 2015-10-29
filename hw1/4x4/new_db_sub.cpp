@@ -124,16 +124,25 @@ public:
 		memcpy(b->board,this->board,TOTAL*sizeof(int));
 		memcpy(b->non_empty,this->non_empty,PATTERN_SIZE*sizeof(int));
 		b->step = step;
-		if(b->board[source_index] != TOTAL-1)
-			b->step++;
+		b->step++;
+		if(b->board[source_index] == TOTAL-1 && b->board[target_index]==-1){
+			b->step--;
+		}
+
 
 		int swap_index_tile_id;
-		if(b->board[target_index]!=-1){
-			
-			/*for(int x =0 ; x < 6;x++){
+		if(b->board[target_index]== TOTAL-1 && b->board[source_index]!= TOTAL-1){
+			b->board[target_index] = board[source_index];
+			b->board[source_index] = board[target_index];
+			b->non_empty[tile_id] = target_index;
+			for(int x =0 ; x < 6;x++){
 				if(non_empty[x]==target_index)
 					swap_index_tile_id =x;
 			}
+			b->non_empty[swap_index_tile_id] = source_index;
+		}else if(b->board[target_index]!=-1){
+			
+			/*
 			b->board[target_index] = board[source_index];
 			b->board[source_index]=board[target_index];
 			b->non_empty[tile_id] = target_index;
@@ -160,11 +169,14 @@ public:
 	int evaluate() const{
 		int sum =0 ,x1,x2,y1,y2;
 		for (int i =0; i< PATTERN_SIZE ;i++){
+			if(board[non_empty[i]]==TOTAL-1)
+				continue;
 			x1 = non_empty[i]/SIZE;
 			y1 = non_empty[i]%SIZE;
 			x2 = board[non_empty[i]]/SIZE;
 			y2= board[non_empty[i]]%SIZE;
 			sum+= abs(x1-x2)+abs(y1-y2);	
+		//	printf("%d %d %d %d %d %d\n",non_empty[i],board[non_empty[i]],x1,y1,x2,y2);
 		}
 		return sum+step;
 	}
@@ -239,12 +251,12 @@ bool gen_next(int * seq,int x ){
 }
 
 bool gen_next_recur(int *seq){
-	puts("Generating Sequence");
+	//puts("Generating Sequence");
 	bool have_next;
 	do{
 		have_next = gen_next(seq,PATTERN_SIZE-1);
 	}while(re(seq) && have_next);
-	puts("End Generating Sequence");
+	//puts("End Generating Sequence");
 	return 	have_next;
 }
 void write_db(int *seq, int pi,int step){
@@ -265,13 +277,20 @@ void test(){
 	initialize();
 	int step_size =0 ;
 	while(gen_next_recur(seq)){
+		//record++;
+		//if((seq[0]!=10) || (seq[1]!=11) || (seq[2]!=15) || seq[3]!=14)
+		//	continue;
+		//printf("record = %d\n",record);
 		//record ++ ;
 		//if(record < 20)
 		//	continue;
 		print_seq(seq);
 		for(int piindex = 0 ; piindex < PATTERN_NUM ;piindex++){
+			//if(piindex<3)
+			//	continue;
+			
 			start = new Board();
-			start->print();
+			//start->print();
 			
 			start->init_with_sequence(seq,piindex);
 			start->print();
@@ -289,19 +308,24 @@ void test(){
 					break;
 				}
 				if(step_size<current->step){
+					//getchar();
 					step_size = current->step;
 					printf("%d\n",step_size);
+					//getchar();
 				}
 				for(int tile_id =0 ;tile_id < PATTERN_SIZE ;tile_id++){
 					for (int direc =0; direc < 4 ;direc++){
 						Board * tmp = current->gen_board(tile_id,direc);
 						if(tmp){
+							//tmp->print();
 							if(!close_list.exist(tmp)&&!open_list.exist(tmp)){	
 								open_list.push(tmp);
 							}else
 								delete tmp;
 						}
+						
 					}
+					//getchar();
 				}
 			}
 
@@ -320,12 +344,17 @@ void test(){
 			}
 			puts("After Clean UP");
 		}
+		//break;
 	}
 }
 
 
 int main(){
-	
+	/*int seq [PATTERN_SIZE];
+	memset(seq,0,sizeof(int)*PATTERN_SIZE);
+	while(gen_next_recur(seq)){
+		print_seq(seq);
+	}*/
 	test();
 
 	return 0;
