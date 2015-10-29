@@ -135,7 +135,7 @@ public:
 			b->board[target_index] = board[source_index];
 			b->board[source_index] = board[target_index];
 			b->non_empty[tile_id] = target_index;
-			for(int x =0 ; x < 6;x++){
+			for(int x =0 ; x < PATTERN_SIZE;x++){
 				if(non_empty[x]==target_index)
 					swap_index_tile_id =x;
 			}

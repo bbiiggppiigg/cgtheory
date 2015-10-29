@@ -123,7 +123,7 @@ public:
 		Board * b = new Board();
 		memcpy(b->board,this->board,TOTAL*sizeof(int));
 		b->board[empty_index] = b->board[swap_index];
-		b->board[swap_index] = 24; 
+		b->board[swap_index] = TOTAL; 
 		b->empty_index = swap_index;
 		b->step = step+1;
 		return b; 
@@ -354,7 +354,7 @@ void id_a_star(int t_index){
 	bool goal_reached = false;
 	int threshold =0 ;
 	
-	while (threshold < 80 && (!goal_reached)){
+	while (threshold < 208 && (!goal_reached)){
 		log_threshold(threshold);
 		threshold = depth_limited(start->clone(),threshold);
 		if(!pq->empty()){

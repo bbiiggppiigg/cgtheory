@@ -356,7 +356,7 @@ void id_a_star(int t_index){
 	bool goal_reached = false;
 	int threshold =0 ;
 	
-	while (threshold < 80 && (!goal_reached)){
+	while (threshold <= 80 && (!goal_reached)){
 		log_threshold(threshold);
 		threshold = depth_limited(start->clone(),threshold);
 		if(!pq->empty()){

@@ -120,16 +120,25 @@ public:
 		memcpy(b->board,this->board,TOTAL*sizeof(int));
 		memcpy(b->non_empty,this->non_empty,PATTERN_SIZE*sizeof(int));
 		b->step = step;
-		if(b->board[source_index] != TOTAL-1 && b->board[target_index] != TOTAL-1)
-			b->step++;
+		b->step++;
+		if(b->board[source_index] == TOTAL-1 && b->board[target_index]==-1){
+			b->step--;
+		}
+
 
 		int swap_index_tile_id;
-		if(b->board[target_index]!=-1){
-			
-			/*for(int x =0 ; x < 6;x++){
+		if(b->board[target_index]== TOTAL-1 && b->board[source_index]!= TOTAL-1){
+			b->board[target_index] = board[source_index];
+			b->board[source_index] = board[target_index];
+			b->non_empty[tile_id] = target_index;
+			for(int x =0 ; x < PATTERN_SIZE;x++){
 				if(non_empty[x]==target_index)
 					swap_index_tile_id =x;
 			}
+			b->non_empty[swap_index_tile_id] = source_index;
+		}else if(b->board[target_index]!=-1){
+			
+			/*
 			b->board[target_index] = board[source_index];
 			b->board[source_index]=board[target_index];
 			b->non_empty[tile_id] = target_index;
