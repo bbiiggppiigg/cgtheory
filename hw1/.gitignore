@@ -1,5 +1,5 @@
 *.out
-db/
-bin/
-log/
-tescase/
+db/*
+bin/*
+log/*
+

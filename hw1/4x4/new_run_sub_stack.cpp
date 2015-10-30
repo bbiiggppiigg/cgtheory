@@ -3,7 +3,7 @@
 #include <string.h>
 #include <queue>
 #include <time.h>
-#include <sys/time.h>
+#include <deque>
 #define MAX_TESTCASE 100
 #define FILENAME "../log/runlog"
 
@@ -15,32 +15,31 @@ using namespace std;
 #define RIGHT 3
 #define SIZE  4
 #define TOTAL SIZE*SIZE
-#define PATTERN_SIZE 8
-#define PATTERN_NUM 4
+#define PATTERN_SIZE 4
+#define PATTERN_NUM 8
 
-int lookup_table [PATTERN_NUM][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL];
-int patterns [][PATTERN_SIZE] = {{0,1,4,5,8,9,12,13},{2,3,6,7,10,11,14,15},{0,1,2,3,4,5,6,7},{8,9,10,11,12,13,14,15}};
-int num_test_case;
+
+int lookup_table [PATTERN_NUM][TOTAL][TOTAL][TOTAL][TOTAL];
+int patterns [][PATTERN_SIZE] = {{0,1,4,5},{8,9,12,13},{2,3,6,7},{10,11,14,15},{0,1,2,3},{4,5,6,7},{8,9,10,11},{12,13,14,15}};
+int testcases[MAX_TESTCASE][TOTAL];
 
 template<
     class T,
-    class Container = std::vector<T>,
-    class Compare = std::less<typename Container::value_type>
-> class MyQueue : public std::priority_queue<T, Container, Compare>
+    class Container = std::deque<T>
+> class MyQueue : public std::queue<T, Container>
 {
 public:
     typedef typename
-        std::priority_queue<
+        std::queue<
         T,
-        Container,
-        Compare>::container_type::const_iterator const_iterator;
+        Container>::container_type::const_iterator const_iterator;
 
     const_iterator find(const T&val) const
     {
         auto first = this->c.cbegin();
         auto last = this->c.cend();
         while (first!=last) {
-            if (*first==val) return first;
+            if (**first==*val) return first;
             ++first;
         }
         return last;
@@ -55,6 +54,7 @@ public:
         return false;
     }
 };
+
 class Board{
 public:
 	int board[TOTAL];
@@ -142,11 +142,11 @@ public:
 		int sum = 0 ,sum2 =0 ;
 		bool goal_reached = true;
 		for(int pi =0 ; (pi < PATTERN_NUM/2) ;pi++){
-			sum += lookup_table[pi][board[patterns[pi][0]]][board[patterns[pi][1]]][board[patterns[pi][2]]][board[patterns[pi][3]]][board[patterns[pi][4]]][board[patterns[pi][5]]][board[patterns[pi][6]]][board[patterns[pi][7]]];
+			sum += lookup_table[pi][board[patterns[pi][0]]][board[patterns[pi][1]]][board[patterns[pi][2]]][board[patterns[pi][3]]];
 			
 		}
 		for (int pi = PATTERN_NUM/2; pi < PATTERN_NUM; pi++ ){
-			sum2 += lookup_table[pi][board[patterns[pi][0]]][board[patterns[pi][1]]][board[patterns[pi][2]]][board[patterns[pi][3]]][board[patterns[pi][4]]][board[patterns[pi][5]]][board[patterns[pi][6]]][board[patterns[pi][7]]];
+			sum2+= lookup_table[pi][board[patterns[pi][0]]][board[patterns[pi][1]]][board[patterns[pi][2]]][board[patterns[pi][3]]];
 		}
 		//printf ("sum = %d sum2 = %d\n",sum,sum2);
 		if(sum==sum2 && sum ==0){
@@ -184,14 +184,13 @@ public:
 };
 
 
-int testcases[MAX_TESTCASE][TOTAL];
 struct compareBoard{
 	bool operator()(const Board * lhs, const Board * rhs) const {
 		return lhs->evaluate() > rhs->evaluate();
 	}
 };
-MyQueue<Board*, vector<Board*>,compareBoard > * pq = new MyQueue<Board*, vector<Board*>,compareBoard >();
-MyQueue<Board*, vector<Board*>,compareBoard > * close_list = new MyQueue<Board*, vector<Board*>,compareBoard >();
+MyQueue<Board*, deque<Board*> > * pq = new MyQueue<Board*, deque<Board*>>();
+MyQueue<Board*, deque<Board*> > * close_list = new MyQueue<Board*, deque<Board*>>();
 
 
 
@@ -214,6 +213,8 @@ void log_threshold(int d){
 	fprintf(fp,"%s : Threshold = %d\n",asctime (timeinfo),d);
 	fclose(fp);
 }
+
+
 bool re(int * seq){
 	for(int i=0;i<PATTERN_SIZE;i++){
 		for(int j=i+1;j<PATTERN_SIZE;j++){
@@ -251,6 +252,7 @@ bool gen_next_recur(int *seq){
 	}while(re(seq) && have_next);
 	return 	have_next;
 }
+
 void input_db(){
 	int seq [PATTERN_SIZE];
 
@@ -266,7 +268,7 @@ void input_db(){
 	while(gen_next_recur(seq)){
 		print_seq(seq);	
 		for(int i =0; i< PATTERN_NUM;i++){
-			fscanf(fps[i],"%d",&lookup_table[i][seq[0]][seq[1]][seq[2]][seq[3]][seq[4]][seq[5]][seq[6]][seq[7]]);
+			fscanf(fps[i],"%d",&lookup_table[i][seq[0]][seq[1]][seq[2]][seq[3]]);
 		}
 		//break;	
 	}
@@ -275,30 +277,23 @@ void input_db(){
 	}
 }
 
-
 void intialization(){
 	puts("Initialization");
 	for(int i =0; i< PATTERN_NUM ;i++){
-		for(int j =0;j < TOTAL ;j ++)
-			for (int k =0;k< TOTAL ;k++)
-				memset(lookup_table[i][j][k],0,TOTAL*TOTAL*TOTAL*TOTAL*TOTAL*TOTAL*sizeof(int));
+		memset(lookup_table[i],0,TOTAL*TOTAL*TOTAL*TOTAL*sizeof(int));
 	}
 	input_db();
 	puts("End of Initialization");
 }
-
 void load_testcase(){
 	FILE * fp = fopen("../testcase/test.in","r");
-	fscanf(fp,"%d",&num_test_case);
-	for(int j =0; j < num_test_case ;j ++)
+	for(int j =0; j < 1 ;j ++)
 		for (int i =0; i < TOTAL ; i++){
 			fscanf(fp,"%d",&testcases[j][i]);
 		}
 	fclose(fp);
 	puts("End Loading Testcase");
 }
-
-
 
 
 int depth_limited(Board * start,int threshold){
@@ -310,16 +305,18 @@ int depth_limited(Board * start,int threshold){
 	int record = 0;
 	printf("Depth Limited A* starting with %d\n",threshold);
 	while(!pq->empty()){
-		b = pq->top();
+		b = pq->front();
 
 		if(b->step > record ){
 			record = b->step;
 			printf("step = %d , cost = %d , pq size = %lu\n",record,b->evaluate(),pq->size());
+			//getchar();
+			//b->print();
 		}
 		if(b->is_goal()){
 			printf("Number of nodes viewed with %d threshold %d\n",i,threshold);
-			//sprintf(logstring,"Number of nodes viewed with %d threshold %d\n",i,threshold);
-			//LOG(logstring);
+			sprintf(logstring,"Number of nodes viewed with %d threshold %d\n",i,threshold);
+			LOG(logstring);
 			return cutoff;	
 		}
 		if(b->last_move == 3){
@@ -347,8 +344,8 @@ int depth_limited(Board * start,int threshold){
 		}
 	}
 	printf("Number of nodes viewed with %d threshold %d\n",i,threshold);
-	//sprintf(logstring,"Number of nodes viewed with %d threshold %d\n",i,threshold);
-	//LOG(logstring);
+	sprintf(logstring,"Number of nodes viewed with %d threshold %d\n",i,threshold);
+	LOG(logstring);
 	return cutoff;
 }
 
@@ -361,34 +358,24 @@ void id_a_star(int t_index){
 	Board * tmp;
 	bool goal_reached = false;
 	int threshold =0 ;
-	struct timeval tval_before, tval_after, tval_result;
-	gettimeofday(&tval_before, NULL);
-	char logstring[1000];
+	
 	while (threshold <= 80 && (!goal_reached)){
-		//log_threshold(threshold);
+		log_threshold(threshold);
 		threshold = depth_limited(start->clone(),threshold);
 		if(!pq->empty()){
-			tmp = pq->top();			
+			tmp = pq->front();			
 			if(tmp->is_goal()){
-				LOG("goal_reached!!");
-				puts("Goal Reached!!");
-				gettimeofday(&tval_after, NULL);
 				tmp->print_history();
 				goal_reached = true;
-				timersub(&tval_after, &tval_before, &tval_result);
-				printf("Time elapsed: %ld.%06ld\n", (long int)tval_result.tv_sec, (long int)tval_result.tv_usec);
-				sprintf(logstring,"Time elapsed: %ld.%06ld\n", (long int)tval_result.tv_sec, (long int)tval_result.tv_usec);
-				LOG(logstring);
+				LOG("goal_reached!!");
+				puts("Goal Reached!!");
+				
+				printf
 			}
 		}
 		while(!pq->empty()){
-			tmp = pq->top();
+			tmp = pq->front();
 			pq->pop();
-			delete tmp;
-		}
-		while(!close_list->empty()){
-			tmp = close_list->top();
-			close_list->pop();
 			delete tmp;
 		}
 	}
@@ -399,10 +386,8 @@ void id_a_star(int t_index){
 void test(){
 	intialization();
 	load_testcase();
-	for(int i=0;i<num_test_case;i++)
-		id_a_star(i);
+	id_a_star(0);
 }
-
 
 int main(){
 	FILE * fp = fopen(FILENAME,"w");

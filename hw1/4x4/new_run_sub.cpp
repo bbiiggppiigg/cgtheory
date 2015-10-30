@@ -3,6 +3,7 @@
 #include <string.h>
 #include <queue>
 #include <time.h>
+#include <sys/time.h>
 
 #define MAX_TESTCASE 100
 #define FILENAME "../log/runlog"
@@ -22,6 +23,7 @@ using namespace std;
 int lookup_table [PATTERN_NUM][TOTAL][TOTAL][TOTAL][TOTAL];
 int patterns [][PATTERN_SIZE] = {{0,1,4,5},{8,9,12,13},{2,3,6,7},{10,11,14,15},{0,1,2,3},{4,5,6,7},{8,9,10,11},{12,13,14,15}};
 int testcases[MAX_TESTCASE][TOTAL];
+int num_test_case;
 
 template<
     class T,
@@ -126,7 +128,7 @@ public:
 		Board * b = new Board();
 		memcpy(b->board,this->board,TOTAL*sizeof(int));
 		b->board[empty_index] = b->board[swap_index];
-		b->board[swap_index] = TOTAL; 
+		b->board[swap_index] = TOTAL-1; 
 		b->empty_index = swap_index;
 		b->step = step+1;
 		return b; 
@@ -192,6 +194,7 @@ struct compareBoard{
 	}
 };
 MyQueue<Board*, vector<Board*>,compareBoard > * pq = new MyQueue<Board*, vector<Board*>,compareBoard >();
+MyQueue<Board*, vector<Board*>,compareBoard > * close_list = new MyQueue<Board*, vector<Board*>,compareBoard >();
 
 
 
@@ -201,7 +204,7 @@ void LOG(char * str){
 	time ( &rawtime );
 	timeinfo = localtime ( &rawtime );
 	FILE * fp = fopen(FILENAME,"a");
-	fprintf(fp,"%s : %s\n",asctime (timeinfo),str);
+	fprintf(fp,"%s\n",str);
 	fclose(fp);
 }
 
@@ -267,7 +270,7 @@ void input_db(){
 		fps[i] = fopen(input_file_name[i],"r");
 	}
 	while(gen_next_recur(seq)){
-		print_seq(seq);	
+		//print_seq(seq);	
 		for(int i =0; i< PATTERN_NUM;i++){
 			fscanf(fps[i],"%d",&lookup_table[i][seq[0]][seq[1]][seq[2]][seq[3]]);
 		}
@@ -288,7 +291,8 @@ void intialization(){
 }
 void load_testcase(){
 	FILE * fp = fopen("../testcase/test.in","r");
-	for(int j =0; j < 1 ;j ++)
+	fscanf(fp,"%d",&num_test_case);
+	for(int j =0; j < num_test_case ;j ++)
 		for (int i =0; i < TOTAL ; i++){
 			fscanf(fp,"%d",&testcases[j][i]);
 		}
@@ -311,17 +315,18 @@ int depth_limited(Board * start,int threshold){
 		if(b->step > record ){
 			record = b->step;
 			printf("step = %d , cost = %d , pq size = %lu\n",record,b->evaluate(),pq->size());
-			getchar();
-			b->print();
+			//getchar();
+			//b->print();
 		}
 		if(b->is_goal()){
 			printf("Number of nodes viewed with %d threshold %d\n",i,threshold);
-			sprintf(logstring,"Number of nodes viewed with %d threshold %d\n",i,threshold);
-			LOG(logstring);
+			//sprintf(logstring,"Number of nodes viewed with %d threshold %d\n",i,threshold);
+			//LOG(logstring);
 			return cutoff;	
 		}
 		if(b->last_move == 3){
 			pq->pop();
+			close_list->push(b);
 			continue;
 		}
 		b->last_move += 1;
@@ -344,8 +349,8 @@ int depth_limited(Board * start,int threshold){
 		}
 	}
 	printf("Number of nodes viewed with %d threshold %d\n",i,threshold);
-	sprintf(logstring,"Number of nodes viewed with %d threshold %d\n",i,threshold);
-	LOG(logstring);
+	//sprintf(logstring,"Number of nodes viewed with %d threshold %d\n",i,threshold);
+	//LOG(logstring);
 	return cutoff;
 }
 
@@ -358,22 +363,34 @@ void id_a_star(int t_index){
 	Board * tmp;
 	bool goal_reached = false;
 	int threshold =0 ;
-	
+	struct timeval tval_before, tval_after, tval_result;
+	gettimeofday(&tval_before, NULL);
+	char logstring[1000];
 	while (threshold <= 80 && (!goal_reached)){
-		log_threshold(threshold);
+		//log_threshold(threshold);
 		threshold = depth_limited(start->clone(),threshold);
 		if(!pq->empty()){
 			tmp = pq->top();			
 			if(tmp->is_goal()){
-				tmp->print_history();
-				goal_reached = true;
 				LOG("goal_reached!!");
 				puts("Goal Reached!!");
+				gettimeofday(&tval_after, NULL);
+				tmp->print_history();
+				goal_reached = true;
+				timersub(&tval_after, &tval_before, &tval_result);
+				printf("Time elapsed: %ld.%06ld\n", (long int)tval_result.tv_sec, (long int)tval_result.tv_usec);
+				sprintf(logstring,"Time elapsed: %ld.%06ld\n", (long int)tval_result.tv_sec, (long int)tval_result.tv_usec);
+				LOG(logstring);
 			}
 		}
 		while(!pq->empty()){
 			tmp = pq->top();
 			pq->pop();
+			delete tmp;
+		}
+		while(!close_list->empty()){
+			tmp = close_list->top();
+			close_list->pop();
 			delete tmp;
 		}
 	}
@@ -384,7 +401,8 @@ void id_a_star(int t_index){
 void test(){
 	intialization();
 	load_testcase();
-	id_a_star(0);
+	for(int i=0;i<num_test_case;i++)
+		id_a_star(i);
 }
 
 int main(){

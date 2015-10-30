@@ -4,6 +4,7 @@
 #include <queue>
 #include <time.h>
 #include <sys/time.h>
+
 #define MAX_TESTCASE 100
 #define FILENAME "../log/runlog"
 
@@ -15,12 +16,13 @@ using namespace std;
 #define RIGHT 3
 #define SIZE  4
 #define TOTAL SIZE*SIZE
-#define PATTERN_SIZE 8
-#define PATTERN_NUM 4
+#define PATTERN_SIZE 4
+#define PATTERN_NUM 8
 
-int lookup_table [PATTERN_NUM][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL][TOTAL];
-int patterns [][PATTERN_SIZE] = {{0,1,4,5,8,9,12,13},{2,3,6,7,10,11,14,15},{0,1,2,3,4,5,6,7},{8,9,10,11,12,13,14,15}};
 int num_test_case;
+int lookup_table [PATTERN_NUM][TOTAL][TOTAL][TOTAL][TOTAL];
+int patterns [][PATTERN_SIZE] = {{0,1,4,5},{8,9,12,13},{2,3,6,7},{10,11,14,15},{0,1,2,3},{4,5,6,7},{8,9,10,11},{12,13,14,15}};
+int testcases[MAX_TESTCASE][TOTAL];
 
 template<
     class T,
@@ -40,7 +42,7 @@ public:
         auto first = this->c.cbegin();
         auto last = this->c.cend();
         while (first!=last) {
-            if (*first==val) return first;
+            if (**first==*val) return first;
             ++first;
         }
         return last;
@@ -55,6 +57,7 @@ public:
         return false;
     }
 };
+
 class Board{
 public:
 	int board[TOTAL];
@@ -142,12 +145,12 @@ public:
 		int sum = 0 ,sum2 =0 ;
 		bool goal_reached = true;
 		for(int pi =0 ; (pi < PATTERN_NUM/2) ;pi++){
-			sum += lookup_table[pi][board[patterns[pi][0]]][board[patterns[pi][1]]][board[patterns[pi][2]]][board[patterns[pi][3]]][board[patterns[pi][4]]][board[patterns[pi][5]]][board[patterns[pi][6]]][board[patterns[pi][7]]];
+			sum += lookup_table[pi][board[patterns[pi][0]]][board[patterns[pi][1]]][board[patterns[pi][2]]][board[patterns[pi][3]]];
 			
 		}
-		for (int pi = PATTERN_NUM/2; pi < PATTERN_NUM; pi++ ){
-			sum2 += lookup_table[pi][board[patterns[pi][0]]][board[patterns[pi][1]]][board[patterns[pi][2]]][board[patterns[pi][3]]][board[patterns[pi][4]]][board[patterns[pi][5]]][board[patterns[pi][6]]][board[patterns[pi][7]]];
-		}
+		/*for (int pi = PATTERN_NUM/2; pi < PATTERN_NUM; pi++ ){
+			sum2+= lookup_table[pi][board[patterns[pi][0]]][board[patterns[pi][1]]][board[patterns[pi][2]]][board[patterns[pi][3]]];
+		}*/
 		//printf ("sum = %d sum2 = %d\n",sum,sum2);
 		if(sum==sum2 && sum ==0){
 			for (int i =0; i < TOTAL ;i++){
@@ -184,7 +187,6 @@ public:
 };
 
 
-int testcases[MAX_TESTCASE][TOTAL];
 struct compareBoard{
 	bool operator()(const Board * lhs, const Board * rhs) const {
 		return lhs->evaluate() > rhs->evaluate();
@@ -201,7 +203,7 @@ void LOG(char * str){
 	time ( &rawtime );
 	timeinfo = localtime ( &rawtime );
 	FILE * fp = fopen(FILENAME,"a");
-	fprintf(fp,"%s : %s\n",asctime (timeinfo),str);
+	fprintf(fp,"%s\n",str);
 	fclose(fp);
 }
 
@@ -214,6 +216,8 @@ void log_threshold(int d){
 	fprintf(fp,"%s : Threshold = %d\n",asctime (timeinfo),d);
 	fclose(fp);
 }
+
+
 bool re(int * seq){
 	for(int i=0;i<PATTERN_SIZE;i++){
 		for(int j=i+1;j<PATTERN_SIZE;j++){
@@ -251,6 +255,7 @@ bool gen_next_recur(int *seq){
 	}while(re(seq) && have_next);
 	return 	have_next;
 }
+
 void input_db(){
 	int seq [PATTERN_SIZE];
 
@@ -264,9 +269,9 @@ void input_db(){
 		fps[i] = fopen(input_file_name[i],"r");
 	}
 	while(gen_next_recur(seq)){
-		print_seq(seq);	
+		//print_seq(seq);	
 		for(int i =0; i< PATTERN_NUM;i++){
-			fscanf(fps[i],"%d",&lookup_table[i][seq[0]][seq[1]][seq[2]][seq[3]][seq[4]][seq[5]][seq[6]][seq[7]]);
+			fscanf(fps[i],"%d",&lookup_table[i][seq[0]][seq[1]][seq[2]][seq[3]]);
 		}
 		//break;	
 	}
@@ -275,18 +280,14 @@ void input_db(){
 	}
 }
 
-
 void intialization(){
 	puts("Initialization");
 	for(int i =0; i< PATTERN_NUM ;i++){
-		for(int j =0;j < TOTAL ;j ++)
-			for (int k =0;k< TOTAL ;k++)
-				memset(lookup_table[i][j][k],0,TOTAL*TOTAL*TOTAL*TOTAL*TOTAL*TOTAL*sizeof(int));
+		memset(lookup_table[i],0,TOTAL*TOTAL*TOTAL*TOTAL*sizeof(int));
 	}
 	input_db();
 	puts("End of Initialization");
 }
-
 void load_testcase(){
 	FILE * fp = fopen("../testcase/test.in","r");
 	fscanf(fp,"%d",&num_test_case);
@@ -297,7 +298,6 @@ void load_testcase(){
 	fclose(fp);
 	puts("End Loading Testcase");
 }
-
 
 
 
@@ -315,6 +315,8 @@ int depth_limited(Board * start,int threshold){
 		if(b->step > record ){
 			record = b->step;
 			printf("step = %d , cost = %d , pq size = %lu\n",record,b->evaluate(),pq->size());
+			//getchar();
+			//b->print();
 		}
 		if(b->is_goal()){
 			printf("Number of nodes viewed with %d threshold %d\n",i,threshold);
@@ -402,7 +404,6 @@ void test(){
 	for(int i=0;i<num_test_case;i++)
 		id_a_star(i);
 }
-
 
 int main(){
 	FILE * fp = fopen(FILENAME,"w");
